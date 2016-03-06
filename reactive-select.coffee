@@ -1,20 +1,28 @@
 Template.select.created = ->
   @autorun =>
-    value = Template.currentData().value
-    unless @selected_text?
-      @selected_text = new ReactiveVar value
+    choice = Template.currentData().choice
+    unless @selected_choice?
+      @selected_choice = new ReactiveVar choice
     else
-      @selected_text.set value
+      @selected_choice.set choice
 
 Template.select.helpers
-  selected_text: ->
-    Template.instance().selected_text.get()
   selected: ->
-    return true if Template.instance().selected_text.get() is @text
+    choice = Template.instance().selected_choice.get()
+    return true if (choice.value is @value) or (choice.text is @text)
     return false
 
 Template.select.events =
   'change select': (event, template) ->
-    new_value = $(event.target).find('option:selected').text()
-    template.selected_text.set new_value
-    @value = new_value
+    #
+    # Construct a new "choice" object
+    #
+    selected_choice = $(event.target).find('option:selected')
+    new_choice =
+      text: selected_choice.text()
+      value: selected_choice.val()
+    #
+    # Update reactive and non-reactive data sources
+    #
+    template.selected_choice.set new_choice
+    @choice = new_choice
